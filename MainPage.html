@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>NFS</title>
+    <link rel="stylesheet" href="loader.css" />
+    <link rel="stylesheet" href="MainPage.css" />
+
+    <style type="text/css"></style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="navdiv">
+        <div class="logo"><a href="index.html">Nature Foot Spa</a></div>
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#booking-sections">Book Now</a></li>
+          <li><a href="#contact-us">Contact</a></li>
+          <li><a href="aboutus.html">About Us</a></li>
+          <li><a href="accountsettings.html">Profile</a></li>
+        </ul>
+      </div>
+    </nav>
+    <!--Transition effect for services-->
+    <main data-router-wrapper>
+      <section data-router-view="home" class="home">
+        <div class="home-content"></div>
+      </section>
+    </main>
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner" id="home">
+      <img src="images/welcomeimg.png" alt="Welcome Image" />
+      <div class="welcome-text">
+        <h1>Welcome to Nature's Foot Spa</h1>
+        <p>Relax, refresh, and rejuvenate with our signature treatments.</p>
+      </div>
+    </div>
+
+    <section class="booking-section" id="booking-sections">
+      <h1><strong>Book Your Appointment</strong></h1>
+      <p>Select your preferred service, date, and time.</p>
+
+      <div class="booking-options">
+        <!-- Service 1 -->
+        <div class="booking-card">
+          <img src="images/hotstone.png" alt="Hot Stone Massage" />
+          <h3>Hot Stone Massage</h3>
+          <p><strong>60 min</strong></p>
+          <a href="service1.html?service_id=2" class="confirm-btn">Book Now</a>
+        </div>
+
+        <!-- Service 2 -->
+        <div class="booking-card">
+          <img src="images/footsoak.png" alt="Aromatherapy Foot Soak" />
+          <h3>Aromatherapy Foot Soak</h3>
+          <p><strong>30 min</strong></p>
+          <a href="service1.html?service_id=3" class="confirm-btn">Book Now</a>
+        </div>
+
+        <!-- Service 3 -->
+        <div class="booking-card">
+          <img src="images/reflexology.png" alt="Reflexology" />
+          <h3>Reflexology</h3>
+          <p><strong>60 min</strong></p>
+          <a href="service1.html?service_id=4" class="confirm-btn">Book Now</a>
+        </div>
+
+        <!-- Service 4 -->
+        <div class="booking-card">
+          <img
+            src="images/Deeptissuefootmassage.png"
+            alt="Deep Tissue Foot Massage"
+          />
+          <h3>Deep Tissue Foot Massage</h3>
+          <p><strong>50 min</strong></p>
+          <a href="service1.html?service_id=5" class="confirm-btn">Book Now</a>
+        </div>
+
+        <!-- Service 5 -->
+        <div class="booking-card">
+          <img src="images/sig.jpg" alt="Nature's Foot Spa Signature" />
+          <h3>Nature's Foot Spa Signature</h3>
+          <p><strong>90 min</strong></p>
+          <a href="service1.html?service_id=1" class="confirm-btn">Book Now</a>
+        </div>
+      </div>
+    </section>
+    <div class="contact-container">
+      <!-- Left Side Info -->
+      <div class="contact-info">
+        <h2>We'd love to hear from you!</h2>
+        <p>
+          We value each customer’s perspective and cherish the opportunity to
+          hear from you. Whether you have a question, feedback, or just want to
+          share your thoughts, we encourage you to reach out.
+        </p>
+
+        <div class="contact-item">
+          80 Eulogio Rodriguez Jr. Ave, Bagumbayan, Quezon City, 1110 Metro
+          Manila
+        </div>
+        <div class="contact-item">
+          Monday to Thursday / 8AM - 6PM <br />
+          Friday / 8AM - 5PM
+        </div>
+        <div class="contact-item">(02) 8656 5790</div>
+      </div>
+
+      <!-- Right Side Form -->
+      <div class="contact-form" id="contact-us">
+        <form>
+          <label for="fname">First Name</label>
+          <input type="text" id="fname" placeholder="First Name" />
+
+          <label for="lname">Last Name</label>
+          <input type="text" id="lname" placeholder="Last Name" />
+
+          <label for="mobile">Mobile Number</label>
+          <input type="tel" id="mobile" placeholder="+63 Mobile Number" />
+
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Email" />
+
+          <label for="message">Message</label>
+          <textarea id="message" placeholder="Type Here"></textarea>
+
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </div>
+    <div class="loader"></div>
+
+    <script src="load.js" defer></script>
+    <script>
+      // Non-destructive service sync: fetch services from backend and append any that
+      // are not already present on the page (so existing hard-coded cards remain).
+      (async function(){
+        
+        async function loadBackendServices() {
+          try{
+            // Use full URL to ensure it hits the backend server
+            const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:3000' : '';
+            console.log('Loading services from:', API_BASE + '/api/services');
+            const res = await fetch(API_BASE + '/api/services');
+            if(!res.ok) {
+              console.log('API response not OK:', res.status, res.statusText);
+              return;
+            }
+            const data = await res.json();
+            console.log('API response data:', data);
+            const services = Array.isArray(data) ? data : (data && data.data ? data.data : []);
+            if(!services || !services.length) {
+              console.log('No services found in response');
+              return;
+            }
+            console.log('Found', services.length, 'services to process');
+
+            const container = document.querySelector('.booking-options');
+            if(!container) return;
+
+            // Build a set of existing service titles to avoid duplicates
+            const existing = new Set(Array.from(container.querySelectorAll('h3')).map(h=>h.textContent.trim().toLowerCase()));
+
+            services.forEach(s=>{
+              const name = (s.SERVICE_NAME || s.NAME || s.service_name || s.name || '').toString().trim();
+              console.log('Processing service:', name);
+              if(!name) return;
+              if(existing.has(name.toLowerCase())) {
+                console.log('Service already exists, skipping:', name);
+                return; // skip if already on page
+              }
+
+              const img = s.IMAGE_URL || s.IMG || 'images/sig.jpg';
+              const dur = s.DURATION || s.duration || '60 min';
+              const id = s.SERVICE_ID || s.service_id || s.id || '';
+
+              console.log('Adding new service to page:', name);
+              const card = document.createElement('div');
+              card.className = 'booking-card';
+              card.innerHTML = `
+                <img src="${img}" alt="${name}" />
+                <h3>${name}</h3>
+                <p><strong>${dur}</strong></p>
+                <a href="service1.html?service_id=${id}" class="confirm-btn">Book Now</a>
+              `;
+              container.appendChild(card);
+            });
+          }catch(err){
+            console.warn('Could not sync services from API:', err.message);
+          }
+        }
+
+        // Call on page load
+        loadBackendServices();
+        
+        // REAL-TIME UPDATES: Listen for service updates from admin panel
+        window.refreshServices = function() {
+          loadBackendServices();
+        };
+        
+        // Also listen to localStorage changes for cross-tab communication
+        window.addEventListener('storage', function(e) {
+          if (e.key === 'servicesUpdated') {
+            setTimeout(loadBackendServices, 100); // Small delay to ensure DB is updated
+          }
+        });
+        
+        // Check periodically in case localStorage event doesn't fire
+        setInterval(function() {
+          const lastUpdate = localStorage.getItem('servicesUpdated');
+          if (lastUpdate && Date.now() - parseInt(lastUpdate) < 5000) {
+            // If updated in last 5 seconds, refresh
+            loadBackendServices();
+            localStorage.removeItem('servicesUpdated'); // Clear the flag
+          }
+        }, 1000);
+
+      })();
+    </script>
+  </body>
+</html>

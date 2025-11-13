@@ -1,0 +1,76 @@
+const serviceService = require('../services/serviceService');
+
+const serviceController = {
+  // Get all services
+  getAllServices: async (req, res, next) => {
+    try {
+      const services = await serviceService.getAllActiveServices();
+
+      res.json({
+        success: true,
+        message: 'Services retrieved successfully',
+        data: services
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Get service by ID
+  getServiceById: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const service = await serviceService.getServiceById(id);
+
+      if (!service) {
+        return res.status(404).json({
+          success: false,
+          message: 'Service not found'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Service retrieved successfully',
+        data: service
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Create new service (Admin only)
+  createService: async (req, res, next) => {
+    try {
+      const { service_name, description, price, duration } = req.body;
+
+      if (!service_name || !price) {
+        return res.status(400).json({
+          success: false,
+          message: 'Name and price are required'
+        });
+      }
+
+      const result = await serviceService.createServices({
+        service_name,
+        description,
+        price,
+        duration
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Service created successfully',
+        data: result
+      });
+    } catch (error) {
+      // Minimal logging — avoid leaking SQL, stack traces, or sensitive info in production logs.
+      // Keep the centralized error handler (next) to format responses consistently.
+      console.error('[serviceController.createService] Error:', error && error.message ? error.message : error);
+      next(error);
+    }
+  }
+
+};
+
+module.exports = serviceController;

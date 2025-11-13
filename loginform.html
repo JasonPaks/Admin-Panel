@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="loginform.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="box form-box">
+        <header>Login</header>
+        <form action="" method="post">
+          <div class="field input">
+            <label for="username">Email</label>
+            <input type="text" name="username" id="username" required />
+          </div>
+
+          <div class="field input">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" required />
+          </div>
+
+          <div class="field">
+            <input
+              type="submit"
+              class="btn"
+              name="submit"
+              value="Login"
+              required
+            />
+          </div>
+          <div class="links">
+            Don't have an Account? <a href="registerform.html">Sign up</a>
+          </div>
+        </form>
+        <script>
+          const loginForm = document.querySelector("form");
+          // const loginButton = document.getElementById("LoginButton");
+
+          loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            try {
+              const response = await fetch(
+                "http://localhost:3000/api/auth/login",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    email_address: email,
+                    password: password,
+                  }),
+                }
+              );
+
+              const data = await response.json();
+
+              if (!response.ok) {
+                throw new Error(data.message || "Login failed");
+              }
+
+              // store token and role if provided by API
+              const token = data.token || (data.data && data.data.token) || (data.data && data.data.token);
+              const user = data.user || (data.data && data.data.user);
+              if (token) {
+                localStorage.setItem("token", token);
+              }
+              if (user && user.role) {
+                localStorage.setItem('role', user.role);
+              }
+
+              alert(data.message || "Login successful");
+              // If admin, redirect to admin panel; otherwise go to main page
+              const role = (user && user.role) || localStorage.getItem('role');
+              if (role && String(role).toLowerCase() === 'admin') {
+                window.location.href = "adminpanel.html";
+              } else {
+                window.location.href = "MainPage.html";
+              }
+            } catch (err) {
+              console.error(err);
+              alert(err.message || "An error occurred while logging in");
+            }
+          });
+
+          // Check if token is available and fetch user data
+          const token = localStorage.getItem('token');
+          if (token) {
+            fetch('http://localhost:3000/api/auth/me', {
+              headers: { Authorization: 'Bearer ' + token }
+            })
+              .then(r => r.text().then(t => ({status: r.status, ok: r.ok, text: t})))
+              .then(console.log)
+              .catch(console.error);
+          }
+        </script>
+      </div>
+    </div>
+  </body>
+</html>
